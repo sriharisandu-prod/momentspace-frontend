@@ -4,7 +4,7 @@ import SockJS from "sockjs-client";
 let stompClient = null;
 
 const SOCKET_URL =
-  "http://localhost:9090/ws";
+  `${process.env.REACT_APP_API_URL || "http://localhost:9090"}/ws`;
 
 
 export const connectCallSocket = (

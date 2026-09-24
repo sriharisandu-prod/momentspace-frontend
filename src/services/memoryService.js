@@ -1,6 +1,7 @@
 // src/services/memoryService.js
 
-const API_URL = "http://localhost:9090/api/posts";
+const API_URL =
+  `${process.env.REACT_APP_API_URL || "http://localhost:9090/api"}/posts`;
 
 const getToken = () => {
   return (

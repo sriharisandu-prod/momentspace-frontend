@@ -1,7 +1,8 @@
 import { Client } from "@stomp/stompjs";
 import SockJS from "sockjs-client";
 
-const SOCKET_URL = "http://localhost:9090/ws";
+const SOCKET_URL =
+  `${process.env.REACT_APP_API_URL || "http://localhost:9090"}/ws`;
 
 let stompClient = null;
 
