@@ -19,7 +19,7 @@ import Register from "./pages/Register";
 import Home from "./pages/Home";
 import Explore from "./pages/Explore";
 import CreateMemory from "./pages/CreateMemory";
-import Saved from "./pages/Saved";
+
 import Categories from "./pages/Categories";
 import Locations from "./pages/Locations";
 import Messages from "./pages/Messages";

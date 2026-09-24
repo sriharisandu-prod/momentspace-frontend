@@ -8,12 +8,6 @@ import "./Layout.css";
 
 import { Outlet } from "react-router-dom";
 
-import { useEffect } from "react";
-import { useAuth } from "../contexts/AuthContext";
-import {
-  connectNotificationSocket,
-  disconnectNotificationSocket,
-} from "../services/notificationSocket";
 
 const MainLayout = () => {
   return (
