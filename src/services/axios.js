@@ -1,19 +1,34 @@
 import axios from "axios";
 
 const api = axios.create({
-  baseURL: process.env.REACT_APP_API_URL || "http://localhost:9090",
+  baseURL:
+    process.env.REACT_APP_API_URL || "http://localhost:9090",
   headers: {
     Accept: "application/json",
+    "Content-Type": "application/json",
   },
 });
 
-// Add JWT token automatically to every request
+// Add JWT token only to protected API requests
 api.interceptors.request.use(
   (config) => {
-    const token = localStorage.getItem("token");
+    const publicEndpoints = [
+      "/auth/login",
+      "/auth/register",
+    ];
 
-    if (token) {
-      config.headers.Authorization = `Bearer ${token}`;
+    const requestUrl = config.url || "";
+
+    const isPublicEndpoint = publicEndpoints.some((endpoint) =>
+      requestUrl.includes(endpoint)
+    );
+
+    if (!isPublicEndpoint) {
+      const token = localStorage.getItem("token");
+
+      if (token) {
+        config.headers.Authorization = `Bearer ${token}`;
+      }
     }
 
     return config;
@@ -23,7 +38,7 @@ api.interceptors.request.use(
   }
 );
 
-// Optional response handling
+// Response handling
 api.interceptors.response.use(
   (response) => {
     return response;
