@@ -1,0 +1,184 @@
+.location-search {
+  position: relative;
+  width: 100%;
+}
+
+.location-search-input-wrapper {
+  position: relative;
+  width: 100%;
+}
+
+.location-search-input {
+  width: 100%;
+  box-sizing: border-box;
+
+  /*
+   * These values match the normal
+   * Create Memory input area.
+   */
+  padding-left: 42px;
+  padding-right: 42px;
+}
+
+.location-search-icon {
+  position: absolute;
+
+  left: 14px;
+  top: 50%;
+
+  transform: translateY(-50%);
+
+  color: #8490a5;
+
+  pointer-events: none;
+
+  z-index: 2;
+}
+
+.location-search-loader {
+  position: absolute;
+
+  right: 14px;
+  top: 50%;
+
+  transform: translateY(-50%);
+
+  color: #4169e9;
+
+  animation:
+    location-search-spin
+    0.8s linear infinite;
+
+  pointer-events: none;
+}
+
+.location-search-dropdown {
+  position: absolute;
+
+  left: 0;
+  right: 0;
+
+  top: calc(100% + 6px);
+
+  z-index: 99999;
+
+  background: #ffffff;
+
+  border: 1px solid #e1e6ef;
+
+  border-radius: 12px;
+
+  box-shadow:
+    0 14px 35px
+    rgba(35, 48, 75, 0.16);
+
+  overflow: hidden;
+}
+
+.location-search-option {
+  width: 100%;
+
+  display: flex;
+
+  align-items: center;
+
+  gap: 12px;
+
+  padding: 12px 14px;
+
+  border: 0;
+
+  background: #ffffff;
+
+  text-align: left;
+
+  cursor: pointer;
+
+  font-family: inherit;
+}
+
+.location-search-option:hover {
+  background: #f5f7fc;
+}
+
+.location-search-option-icon {
+  width: 34px;
+  height: 34px;
+
+  flex-shrink: 0;
+
+  display: flex;
+
+  align-items: center;
+  justify-content: center;
+
+  border-radius: 50%;
+
+  background: #edf2ff;
+
+  color: #4169e9;
+}
+
+.location-search-option-content {
+  min-width: 0;
+
+  display: flex;
+
+  flex-direction: column;
+
+  gap: 3px;
+}
+
+.location-search-option-content strong {
+  color: #27334c;
+
+  font-size: 14px;
+
+  font-weight: 650;
+
+  overflow: hidden;
+
+  text-overflow: ellipsis;
+
+  white-space: nowrap;
+}
+
+.location-search-option-content small {
+  color: #818da3;
+
+  font-size: 12px;
+
+  overflow: hidden;
+
+  text-overflow: ellipsis;
+
+  white-space: nowrap;
+}
+
+.location-search-powered {
+  padding: 8px 14px;
+
+  border-top: 1px solid #edf0f5;
+
+  background: #fafbfe;
+
+  color: #818da3;
+
+  font-size: 11px;
+
+  text-align: right;
+}
+
+@keyframes location-search-spin {
+  from {
+    transform:
+      translateY(-50%)
+      rotate(0deg);
+  }
+
+  to {
+    transform:
+      translateY(-50%)
+      rotate(360deg);
+  }
+}

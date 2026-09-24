@@ -1,0 +1,409 @@
+.call-overlay {
+  position: fixed;
+  inset: 0;
+  z-index: 10000;
+
+  display: flex;
+  align-items: center;
+  justify-content: center;
+
+  background: rgba(15, 23, 42, 0.72);
+
+  padding: 20px;
+}
+
+.call-card {
+  width: min(380px, 100%);
+
+  padding: 36px 28px;
+
+  border-radius: 24px;
+
+  background: #ffffff;
+
+  text-align: center;
+
+  box-shadow:
+    0 24px 70px
+    rgba(0, 0, 0, 0.28);
+}
+
+.call-avatar {
+  width: 82px;
+  height: 82px;
+
+  margin: 0 auto 20px;
+
+  display: flex;
+  align-items: center;
+  justify-content: center;
+
+  border-radius: 50%;
+
+  background: #edf2ff;
+  color: #4169e9;
+}
+
+.call-card h2 {
+  margin: 0;
+
+  color: #27334c;
+
+  font-size: 22px;
+  font-weight: 700;
+}
+
+.call-card p {
+  margin: 8px 0 28px;
+
+  color: #818da3;
+
+  font-size: 14px;
+}
+
+.call-actions {
+  display: flex;
+
+  align-items: center;
+  justify-content: center;
+
+  gap: 20px;
+}
+
+.call-actions button {
+  width: 56px;
+  height: 56px;
+
+  border: 0;
+
+  border-radius: 50%;
+
+  display: flex;
+  align-items: center;
+  justify-content: center;
+
+  cursor: pointer;
+
+  color: #ffffff;
+}
+
+.call-reject-button,
+.call-end-button {
+  background: #ef4444;
+}
+
+.call-accept-button {
+  background: #22c55e;
+}
+
+.call-mute-button {
+  background: #64748b;
+}
+
+.call-actions button:hover {
+  opacity: 0.88;
+}
+/* =========================================
+   WEBRTC VIDEO CALL
+========================================= */
+
+.call-video-mode {
+  padding: 0;
+  background: #0f172a;
+}
+
+
+.call-video-container {
+  position: relative;
+  width: 100%;
+  height: 100%;
+  min-height: 100vh;
+  overflow: hidden;
+  background: #0f172a;
+}
+
+
+.call-remote-video {
+  width: 100%;
+  height: 100%;
+  min-height: 100vh;
+  object-fit: cover;
+  background: #0f172a;
+}
+
+
+.call-local-video {
+  position: absolute;
+  right: 24px;
+  bottom: 100px;
+
+  width: 190px;
+  height: 135px;
+
+  object-fit: cover;
+
+  border-radius: 16px;
+
+  background: #1e293b;
+
+  border: 2px solid rgba(255, 255, 255, 0.85);
+
+  box-shadow:
+    0 12px 30px
+    rgba(0, 0, 0, 0.35);
+}
+
+
+.call-video-status {
+  position: absolute;
+
+  inset: 0;
+
+  display: flex;
+
+  flex-direction: column;
+
+  align-items: center;
+
+  justify-content: center;
+
+  text-align: center;
+
+  color: #ffffff;
+
+  background:
+    rgba(15, 23, 42, 0.55);
+}
+
+
+.call-video-status h2 {
+  margin: 18px 0 0;
+
+  color: #ffffff;
+
+  font-size: 22px;
+}
+
+
+.call-video-controls {
+  position: absolute;
+
+  left: 0;
+  right: 0;
+  bottom: 28px;
+
+  display: flex;
+
+  align-items: center;
+
+  justify-content: center;
+
+  gap: 20px;
+
+  z-index: 20;
+}
+
+
+.call-video-controls button {
+  width: 58px;
+  height: 58px;
+
+  border: 0;
+
+  border-radius: 50%;
+
+  display: flex;
+
+  align-items: center;
+
+  justify-content: center;
+
+  cursor: pointer;
+
+  color: #ffffff;
+}
+
+
+.call-video-controls .call-mute-button {
+  background: #64748b;
+}
+
+
+.call-video-controls .call-end-button {
+  background: #ef4444;
+}
+
+
+.call-video-controls button:hover {
+  opacity: 0.88;
+}
+
+
+@media (max-width: 600px) {
+
+  .call-local-video {
+    right: 14px;
+    bottom: 96px;
+
+    width: 125px;
+    height: 175px;
+  }
+
+}
+
+/* =========================================
+   WEBRTC VIDEO CALL
+========================================= */
+
+.call-video-mode {
+  padding: 0;
+  background: #0f172a;
+}
+
+
+.call-video-container {
+  position: relative;
+  width: 100%;
+  height: 100%;
+  min-height: 100vh;
+  overflow: hidden;
+  background: #0f172a;
+}
+
+
+.call-remote-video {
+  width: 100%;
+  height: 100%;
+  min-height: 100vh;
+
+  object-fit: cover;
+
+  background: #0f172a;
+}
+
+
+.call-local-video {
+  position: absolute;
+
+  right: 24px;
+  bottom: 100px;
+
+  width: 190px;
+  height: 135px;
+
+  object-fit: cover;
+
+  border-radius: 16px;
+
+  background: #1e293b;
+
+  border: 2px solid rgba(255, 255, 255, 0.85);
+
+  box-shadow:
+    0 12px 30px
+    rgba(0, 0, 0, 0.35);
+
+  z-index: 10;
+}
+
+
+.call-video-status {
+  position: absolute;
+
+  inset: 0;
+
+  display: flex;
+
+  flex-direction: column;
+
+  align-items: center;
+
+  justify-content: center;
+
+  text-align: center;
+
+  color: #ffffff;
+
+  background:
+    rgba(15, 23, 42, 0.55);
+
+  z-index: 5;
+}
+
+
+.call-video-status h2 {
+  margin: 18px 0 0;
+
+  color: #ffffff;
+
+  font-size: 22px;
+}
+
+
+.call-video-controls {
+  position: absolute;
+
+  left: 0;
+  right: 0;
+  bottom: 28px;
+
+  display: flex;
+
+  align-items: center;
+
+  justify-content: center;
+
+  gap: 20px;
+
+  z-index: 20;
+}
+
+
+.call-video-controls button {
+  width: 58px;
+  height: 58px;
+
+  border: 0;
+
+  border-radius: 50%;
+
+  display: flex;
+
+  align-items: center;
+
+  justify-content: center;
+
+  cursor: pointer;
+
+  color: #ffffff;
+}
+
+
+.call-video-controls .call-mute-button {
+  background: #64748b;
+}
+
+
+.call-video-controls .call-end-button {
+  background: #ef4444;
+}
+
+
+.call-video-controls button:hover {
+  opacity: 0.88;
+}
+
+
+@media (max-width: 600px) {
+
+  .call-local-video {
+
+    right: 14px;
+    bottom: 96px;
+
+    width: 125px;
+    height: 175px;
+
+  }
+
+}

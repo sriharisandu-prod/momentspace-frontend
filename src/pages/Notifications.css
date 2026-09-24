@@ -1,0 +1,152 @@
+.notifications-page {
+  width: 100%;
+  min-height: 100%;
+  padding: 32px;
+  box-sizing: border-box;
+}
+
+.notifications-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 20px;
+  margin-bottom: 28px;
+}
+
+.notifications-header h1 {
+  margin: 0;
+  font-size: 28px;
+  font-weight: 700;
+}
+
+.notifications-header p {
+  margin: 8px 0 0;
+  color: #777;
+  font-size: 14px;
+}
+
+.notifications-unread-count {
+  padding: 8px 14px;
+  border-radius: 20px;
+  background: #f1f1f1;
+  font-size: 13px;
+  font-weight: 600;
+}
+
+.notifications-list {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.notification-item {
+  position: relative;
+  display: flex;
+  align-items: center;
+  gap: 15px;
+  padding: 16px 18px;
+  border-radius: 14px;
+  cursor: pointer;
+  transition:
+    background 0.2s ease,
+    transform 0.2s ease;
+}
+
+.notification-item:hover {
+  background: #f7f7f7;
+}
+
+.notification-unread {
+  background: #fafafa;
+}
+
+.notification-read {
+  background: transparent;
+}
+
+.notification-icon {
+  width: 46px;
+  height: 46px;
+  min-width: 46px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 50%;
+  background: #f1f1f1;
+  font-size: 20px;
+}
+
+.notification-content {
+  flex: 1;
+  min-width: 0;
+}
+
+.notification-message {
+  color: #222;
+  font-size: 15px;
+  line-height: 1.5;
+}
+
+.notification-message strong {
+  font-weight: 700;
+}
+
+.notification-time {
+  margin-top: 5px;
+  color: #888;
+  font-size: 12px;
+}
+
+.notification-unread-dot {
+  width: 9px;
+  height: 9px;
+  min-width: 9px;
+  border-radius: 50%;
+  background: #2563eb;
+}
+
+.notifications-state {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  min-height: 280px;
+  text-align: center;
+  color: #777;
+}
+
+.notifications-state h3 {
+  margin: 14px 0 6px;
+  color: #333;
+}
+
+.notifications-state p {
+  margin: 0;
+  max-width: 420px;
+  line-height: 1.6;
+}
+
+.notifications-empty-icon {
+  font-size: 42px;
+}
+
+@media (max-width: 768px) {
+  .notifications-page {
+    padding: 20px;
+  }
+
+  .notifications-header {
+    align-items: flex-start;
+    flex-direction: column;
+  }
+
+  .notification-item {
+    padding: 14px;
+  }
+}
+.notification-comment {
+  color: #475569;
+  font-weight: 500;
+  margin-left: 3px;
+  word-break: break-word;
+}
