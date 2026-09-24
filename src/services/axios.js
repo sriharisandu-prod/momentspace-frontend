@@ -3,13 +3,13 @@ import axios from "axios";
 const api = axios.create({
   baseURL:
     process.env.REACT_APP_API_URL || "http://localhost:9090",
+
   headers: {
     Accept: "application/json",
-    "Content-Type": "application/json",
   },
 });
 
-// Add JWT token only to protected API requests
+// Add JWT token to protected API requests
 api.interceptors.request.use(
   (config) => {
     const publicEndpoints = [
@@ -33,16 +33,11 @@ api.interceptors.request.use(
 
     return config;
   },
-  (error) => {
-    return Promise.reject(error);
-  }
+  (error) => Promise.reject(error)
 );
 
-// Response handling
 api.interceptors.response.use(
-  (response) => {
-    return response;
-  },
+  (response) => response,
   (error) => {
     console.error(
       "API ERROR:",
