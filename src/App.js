@@ -10,6 +10,14 @@ import {
 import {
   useAuth,
 } from "./contexts/AuthContext";
+
+import {
+  CallProvider,
+  useCall,
+} from "./contexts/CallContext";
+
+import CallPanel from "./components/CallPanel";
+
 import SavedMemories from "./pages/SavedMemories";
 import MainLayout from "./layouts/MainLayout";
 
@@ -28,6 +36,10 @@ import PublicProfile from "./pages/PublicProfile";
 import Settings from "./pages/Settings";
 import Notifications from "./pages/Notifications";
 
+
+/* =========================================================
+   PROTECTED ROUTE
+========================================================= */
 
 const ProtectedRoute = ({ children }) => {
   const {
@@ -67,13 +79,67 @@ const ProtectedRoute = ({ children }) => {
 };
 
 
+/* =========================================================
+   GLOBAL CALL UI
+========================================================= */
+
+const GlobalCallPanel = () => {
+  const {
+    call,
+    incomingCall,
+    callConnected,
+    isMuted,
+    localVideoRef,
+    remoteVideoRef,
+    remoteAudioRef,
+
+    acceptCall,
+    rejectCall,
+    endCall,
+    toggleMute,
+  } = useCall();
+
+  /*
+   * Don't render anything when there is no active
+   * incoming/outgoing call.
+   */
+  if (!call && !incomingCall) {
+    return null;
+  }
+
+  return (
+    <CallPanel
+      call={call}
+      incomingCall={incomingCall}
+
+      onAccept={acceptCall}
+      onReject={rejectCall}
+      onEnd={endCall}
+
+      callConnected={callConnected}
+
+      isMuted={isMuted}
+      onToggleMute={toggleMute}
+
+      localVideoRef={localVideoRef}
+      remoteVideoRef={remoteVideoRef}
+      remoteAudioRef={remoteAudioRef}
+    />
+  );
+};
+
+
+/* =========================================================
+   APPLICATION ROUTES
+========================================================= */
+
 const AppRoutes = () => {
   return (
     <Routes>
 
-      {/* =========================
+      {/* =================================================
           PUBLIC ROUTES
-      ========================== */}
+      ================================================= */}
 
       <Route
         path="/login"
@@ -86,9 +152,9 @@ const AppRoutes = () => {
       />
 
 
-      {/* =========================
+      {/* =================================================
           PROTECTED ROUTES
-      ========================== */}
+      ================================================= */}
 
       <Route
         element={
@@ -118,9 +184,9 @@ const AppRoutes = () => {
 
         {/* Saved Memories */}
         <Route
-  path="/saved"
-  element={<SavedMemories />}
-/>
+          path="/saved"
+          element={<SavedMemories />}
+        />
 
         {/* Categories */}
         <Route
@@ -189,7 +255,10 @@ const AppRoutes = () => {
       </Route>
 
 
-      {/* Unknown public route */}
+      {/* =================================================
+          UNKNOWN PUBLIC ROUTE
+      ================================================= */}
+
       <Route
         path="*"
         element={
@@ -205,10 +274,31 @@ const AppRoutes = () => {
 };
 
 
+/* =========================================================
+   APP
+========================================================= */
+
 const App = () => {
   return (
     <BrowserRouter>
-      <AppRoutes />
+
+      {/* 
+        CallProvider must wrap the routes so Messages,
+        Home, Profile, etc. can access call state.
+      */}
+      <CallProvider>
+
+        <AppRoutes />
+
+        {/* 
+          This remains mounted globally.
+          Therefore an incoming call can appear even if
+          the user is currently on Home/Profile/Explore.
+        */}
+        <GlobalCallPanel />
+
+      </CallProvider>
+
     </BrowserRouter>
   );
 };

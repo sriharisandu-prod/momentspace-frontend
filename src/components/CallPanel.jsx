@@ -1,4 +1,7 @@
-import React from "react";
+import React, {
+  useEffect,
+  useRef,
+} from "react";
 
 import {
   Phone,
@@ -8,37 +11,122 @@ import {
   MicOff,
 } from "lucide-react";
 
+import {
+  useCall,
+} from "../context/CallContext";
+
 import "./CallPanel.css";
 
 
-const CallPanel = ({
-  call,
-  incomingCall,
+const CallPanel = () => {
 
-  onAccept,
-  onReject,
-  onEnd,
+  const {
+    call,
+    incomingCall,
 
-  callConnected,
+    callConnected,
+    callStatus,
 
-  isMuted,
-  onToggleMute,
+    isMuted,
 
-  localVideoRef,
-  remoteVideoRef,
-  remoteAudioRef,
-}) => {
+    localStream,
+    remoteStream,
+
+    acceptCall,
+    rejectCall,
+    endCall,
+    toggleMute,
+  } = useCall();
+
 
   /*
-   * =========================
+   * ==========================
+   * VIDEO REFS
+   * ==========================
+   */
+
+  const localVideoRef =
+    useRef(null);
+
+  const remoteVideoRef =
+    useRef(null);
+
+  const remoteAudioRef =
+    useRef(null);
+
+
+  /*
+   * ==========================
+   * LOCAL VIDEO
+   * ==========================
+   */
+
+  useEffect(() => {
+
+    if (
+      localVideoRef.current &&
+      localStream
+    ) {
+
+      console.log(
+        "Setting LOCAL video stream"
+      );
+
+      localVideoRef.current.srcObject =
+        localStream;
+
+    }
+
+  }, [localStream]);
+
+
+  /*
+   * ==========================
+   * REMOTE VIDEO
+   * ==========================
+   */
+
+  useEffect(() => {
+
+    if (
+      remoteVideoRef.current &&
+      remoteStream
+    ) {
+
+      console.log(
+        "Setting REMOTE video stream"
+      );
+
+      remoteVideoRef.current.srcObject =
+        remoteStream;
+
+    }
+
+
+    if (
+      remoteAudioRef.current &&
+      remoteStream
+    ) {
+
+      remoteAudioRef.current.srcObject =
+        remoteStream;
+
+    }
+
+  }, [remoteStream]);
+
+
+  /*
+   * ==========================
    * INCOMING CALL
-   * =========================
+   * ==========================
    */
 
   if (incomingCall) {
 
     const isVideo =
-      incomingCall.callType === "VIDEO";
+      incomingCall.callType ===
+      "VIDEO";
 
 
     return (
@@ -56,6 +144,7 @@ const CallPanel = ({
 
           </div>
 
+
           <h2>
             Incoming{" "}
             {isVideo
@@ -64,32 +153,45 @@ const CallPanel = ({
             call
           </h2>
 
+
           <p>
             Someone is calling you
           </p>
 
+
           <div className="call-actions">
+
+            {/* REJECT */}
 
             <button
               type="button"
               className="call-reject-button"
-              onClick={onReject}
+              onClick={rejectCall}
               aria-label="Reject call"
             >
-              <PhoneOff size={22} />
+
+              <PhoneOff
+                size={22}
+              />
+
             </button>
+
+
+            {/* ACCEPT */}
 
             <button
               type="button"
               className="call-accept-button"
-              onClick={onAccept}
+              onClick={acceptCall}
               aria-label="Accept call"
             >
+
               {isVideo ? (
                 <Video size={22} />
               ) : (
                 <Phone size={22} />
               )}
+
             </button>
 
           </div>
@@ -102,9 +204,9 @@ const CallPanel = ({
 
 
   /*
-   * =========================
-   * NO CALL
-   * =========================
+   * ==========================
+   * NO ACTIVE CALL
+   * ==========================
    */
 
   if (!call) {
@@ -113,21 +215,28 @@ const CallPanel = ({
 
 
   const isVideo =
-    call.callType === "VIDEO";
+    call.callType ===
+    "VIDEO";
 
 
   /*
-   * =========================
+   * ==========================
    * VIDEO CALL
-   * =========================
+   * ==========================
    */
 
   if (isVideo) {
 
     return (
-      <div className="call-overlay call-video-mode">
+      <div
+        className={
+          "call-overlay call-video-mode"
+        }
+      >
 
         <div className="call-video-container">
+
+          {/* REMOTE VIDEO */}
 
           <video
             ref={remoteVideoRef}
@@ -135,6 +244,9 @@ const CallPanel = ({
             autoPlay
             playsInline
           />
+
+
+          {/* LOCAL VIDEO */}
 
           <video
             ref={localVideoRef}
@@ -145,58 +257,123 @@ const CallPanel = ({
           />
 
 
+          {/* STATUS */}
+
           {!callConnected && (
-            <div className="call-video-status">
+
+            <div
+              className={
+                "call-video-status"
+              }
+            >
 
               <div className="call-avatar">
+
                 <Video size={30} />
+
               </div>
 
+
               <h2>
-                {call.type === "CALL_STARTED"
+
+                {callStatus ===
+                "CALLING"
                   ? "Calling..."
+
+                  : callStatus ===
+                    "RINGING"
+                    ? "Incoming call..."
+
+                  : callStatus ===
+                    "ACCEPTED"
+                    ? "Connecting..."
+
+                  : callStatus ===
+                    "CONNECTING"
+                    ? "Connecting..."
+
+                  : callStatus ===
+                    "FAILED"
+                    ? "Connection failed"
+
                   : "Connecting..."}
+
               </h2>
 
             </div>
+
+          )}
+
+
+          {/* CONNECTED INDICATOR */}
+
+          {callConnected && (
+
+            <div
+              className={
+                "call-connected-indicator"
+              }
+            >
+              Connected
+            </div>
+
           )}
 
         </div>
 
 
+        {/* REMOTE AUDIO */}
+
         <audio
           ref={remoteAudioRef}
           autoPlay
+          playsInline
         />
 
 
-        <div className="call-video-controls">
+        {/* CONTROLS */}
+
+        <div
+          className={
+            "call-video-controls"
+          }
+        >
+
+          {/* MUTE */}
 
           <button
             type="button"
             className="call-mute-button"
-            onClick={onToggleMute}
+            onClick={toggleMute}
             aria-label={
               isMuted
                 ? "Unmute microphone"
                 : "Mute microphone"
             }
           >
+
             {isMuted ? (
               <MicOff size={22} />
             ) : (
               <Mic size={22} />
             )}
+
           </button>
 
+
+          {/* END */}
 
           <button
             type="button"
             className="call-end-button"
-            onClick={onEnd}
+            onClick={endCall}
             aria-label="End call"
           >
-            <PhoneOff size={22} />
+
+            <PhoneOff
+              size={22}
+            />
+
           </button>
 
         </div>
@@ -207,9 +384,9 @@ const CallPanel = ({
 
 
   /*
-   * =========================
+   * ==========================
    * VOICE CALL
-   * =========================
+   * ==========================
    */
 
   return (
@@ -218,53 +395,97 @@ const CallPanel = ({
       <div className="call-card">
 
         <div className="call-avatar">
+
           <Phone size={32} />
+
         </div>
 
+
         <h2>
+
           {callConnected
+
             ? "Call connected"
-            : call.type === "CALL_STARTED"
+
+            : callStatus ===
+              "CALLING"
+
               ? "Calling..."
-              : "Connecting..."}
+
+              : callStatus ===
+                "RINGING"
+
+                ? "Incoming call..."
+
+                : callStatus ===
+                  "FAILED"
+
+                  ? "Connection failed"
+
+                  : "Connecting..."}
+
         </h2>
+
 
         <p>
           Voice call
         </p>
 
+
         <div className="call-actions">
+
+          {/* MUTE */}
 
           <button
             type="button"
             className="call-mute-button"
-            onClick={onToggleMute}
+            onClick={toggleMute}
             aria-label={
               isMuted
                 ? "Unmute microphone"
                 : "Mute microphone"
             }
           >
+
             {isMuted ? (
               <MicOff size={22} />
             ) : (
               <Mic size={22} />
             )}
+
           </button>
 
+
+          {/* END */}
 
           <button
             type="button"
             className="call-end-button"
-            onClick={onEnd}
+            onClick={endCall}
             aria-label="End call"
           >
-            <PhoneOff size={22} />
+
+            <PhoneOff
+              size={22}
+            />
+
           </button>
 
         </div>
 
       </div>
+
+
+      {/* IMPORTANT:
+          The remote audio element must
+          exist for voice calls too.
+      */}
+
+      <audio
+        ref={remoteAudioRef}
+        autoPlay
+        playsInline
+      />
 
     </div>
   );
