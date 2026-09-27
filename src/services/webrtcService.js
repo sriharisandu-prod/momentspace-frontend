@@ -1,23 +1,26 @@
-/**
- * WebRTC ICE servers.
+/*
+ * =========================================================
+ * WEBRTC CONFIGURATION
+ * =========================================================
  *
- * STUN helps browsers discover their public network address.
+ * STUN helps the two browsers discover their public
+ * network addresses.
  *
- * For production reliability, you should eventually add
- * a TURN server as well.
+ * For production, especially on Render/Vercel users behind
+ * restrictive NAT/firewalls, a TURN server is recommended.
  */
+
 const ICE_SERVERS = [
-
   {
-    urls:
-      "stun:stun.l.google.com:19302",
+    urls: "stun:stun.l.google.com:19302",
   },
-
 ];
 
 
-/**
- * Create a WebRTC peer connection.
+/*
+ * =========================================================
+ * CREATE PEER CONNECTION
+ * =========================================================
  */
 export const createPeerConnection = ({
   onIceCandidate,
@@ -25,134 +28,77 @@ export const createPeerConnection = ({
   onConnectionStateChange,
   onIceConnectionStateChange,
 }) => {
-
   const peerConnection =
     new RTCPeerConnection({
-      iceServers:
-        ICE_SERVERS,
+      iceServers: ICE_SERVERS,
     });
 
 
   /*
-   * ICE candidate generated locally.
+   * ICE candidate
    */
   peerConnection.onicecandidate =
     (event) => {
-
-      if (!event.candidate) {
-        return;
-      }
-
-      console.log(
-        "LOCAL ICE CANDIDATE:",
-        event.candidate
-      );
-
-      if (onIceCandidate) {
-
+      if (
+        event.candidate &&
+        onIceCandidate
+      ) {
         onIceCandidate(
           event.candidate
         );
-
       }
-
     };
 
 
   /*
-   * Remote audio/video track received.
+   * Remote media
    */
   peerConnection.ontrack =
     (event) => {
-
       console.log(
-        "REMOTE TRACK RECEIVED:",
+        "WEBRTC REMOTE TRACK:",
         event.track.kind
       );
 
-      console.log(
-        "REMOTE STREAMS:",
-        event.streams
-      );
-
       if (onTrack) {
-
         onTrack(event);
-
       }
-
     };
 
 
   /*
-   * Actual WebRTC connection state.
+   * Connection state
    */
   peerConnection.onconnectionstatechange =
     () => {
-
       console.log(
         "WEBRTC CONNECTION STATE:",
         peerConnection.connectionState
       );
 
       if (onConnectionStateChange) {
-
         onConnectionStateChange(
           peerConnection.connectionState
         );
-
       }
-
     };
 
 
   /*
-   * ICE connection state.
+   * ICE connection state
    */
   peerConnection.oniceconnectionstatechange =
     () => {
-
       console.log(
-        "ICE CONNECTION STATE:",
+        "WEBRTC ICE STATE:",
         peerConnection.iceConnectionState
       );
 
       if (onIceConnectionStateChange) {
-
         onIceConnectionStateChange(
           peerConnection.iceConnectionState
         );
-
       }
-
-    };
-
-
-  /*
-   * Signaling state.
-   */
-  peerConnection.onsignalingstatechange =
-    () => {
-
-      console.log(
-        "SIGNALING STATE:",
-        peerConnection.signalingState
-      );
-
-    };
-
-
-  /*
-   * ICE gathering.
-   */
-  peerConnection.onicegatheringstatechange =
-    () => {
-
-      console.log(
-        "ICE GATHERING STATE:",
-        peerConnection.iceGatheringState
-      );
-
     };
 
 
@@ -160,17 +106,19 @@ export const createPeerConnection = ({
 };
 
 
-/**
- * Get microphone/camera.
+/*
+ * =========================================================
+ * GET LOCAL MEDIA
+ * =========================================================
  */
 export const getLocalMedia =
   async (callType) => {
-
     const isVideo =
-      callType === "VIDEO";
+      String(callType).toUpperCase() ===
+      "VIDEO";
 
     console.log(
-      "Requesting media:",
+      "REQUESTING LOCAL MEDIA:",
       {
         audio: true,
         video: isVideo,
@@ -178,60 +126,69 @@ export const getLocalMedia =
     );
 
     const stream =
-      await navigator.mediaDevices.getUserMedia({
-        audio: true,
-        video: isVideo,
-      });
+      await navigator.mediaDevices.getUserMedia(
+        {
+          audio: true,
+          video: isVideo,
+        }
+      );
 
     console.log(
-      "Local media obtained:",
-      stream.getTracks()
+      "LOCAL MEDIA ACQUIRED"
     );
 
     return stream;
   };
 
 
-/**
- * Add local microphone/camera tracks
- * to the peer connection.
+/*
+ * =========================================================
+ * ADD LOCAL TRACKS
+ * =========================================================
  */
 export const addLocalTracks = (
   peerConnection,
-  localStream
+  stream
 ) => {
-
-  if (!peerConnection) {
+  if (
+    !peerConnection ||
+    !stream
+  ) {
     return;
   }
 
-  if (!localStream) {
-    return;
-  }
-
-  localStream
+  stream
     .getTracks()
     .forEach((track) => {
-
       console.log(
-        "Adding local track:",
+        "ADDING LOCAL TRACK:",
         track.kind
       );
 
       peerConnection.addTrack(
         track,
-        localStream
+        stream
       );
-
     });
 };
 
 
-/**
- * Create WebRTC offer.
+/*
+ * =========================================================
+ * CREATE OFFER
+ * =========================================================
  */
 export const createOffer =
   async (peerConnection) => {
+    if (!peerConnection) {
+      throw new Error(
+        "Peer connection does not exist."
+      );
+    }
+
+    console.log(
+      "CREATING WEBRTC OFFER"
+    );
 
     const offer =
       await peerConnection.createOffer();
@@ -240,15 +197,30 @@ export const createOffer =
       offer
     );
 
+    console.log(
+      "LOCAL OFFER CREATED"
+    );
+
     return offer;
   };
 
 
-/**
- * Create WebRTC answer.
+/*
+ * =========================================================
+ * CREATE ANSWER
+ * =========================================================
  */
 export const createAnswer =
   async (peerConnection) => {
+    if (!peerConnection) {
+      throw new Error(
+        "Peer connection does not exist."
+      );
+    }
+
+    console.log(
+      "CREATING WEBRTC ANSWER"
+    );
 
     const answer =
       await peerConnection.createAnswer();
@@ -257,18 +229,40 @@ export const createAnswer =
       answer
     );
 
+    console.log(
+      "LOCAL ANSWER CREATED"
+    );
+
     return answer;
   };
 
 
-/**
- * Set remote offer/answer.
+/*
+ * =========================================================
+ * SET REMOTE DESCRIPTION
+ * =========================================================
  */
 export const setRemoteDescription =
   async (
     peerConnection,
     description
   ) => {
+    if (!peerConnection) {
+      throw new Error(
+        "Peer connection does not exist."
+      );
+    }
+
+    if (!description) {
+      throw new Error(
+        "Remote description is missing."
+      );
+    }
+
+    console.log(
+      "SETTING REMOTE DESCRIPTION:",
+      description.type
+    );
 
     await peerConnection.setRemoteDescription(
       new RTCSessionDescription(
@@ -276,20 +270,26 @@ export const setRemoteDescription =
       )
     );
 
+    console.log(
+      "REMOTE DESCRIPTION SET"
+    );
   };
 
 
-/**
- * Add remote ICE candidate.
+/*
+ * =========================================================
+ * ADD ICE CANDIDATE
+ * =========================================================
  */
 export const addIceCandidate =
   async (
     peerConnection,
     candidate
   ) => {
-
     if (!peerConnection) {
-      return;
+      throw new Error(
+        "Peer connection does not exist."
+      );
     }
 
     if (!candidate) {
@@ -297,56 +297,62 @@ export const addIceCandidate =
     }
 
     await peerConnection.addIceCandidate(
-      new RTCIceCandidate(candidate)
+      new RTCIceCandidate(
+        candidate
+      )
     );
   };
 
 
-/**
- * Stop microphone/camera.
+/*
+ * =========================================================
+ * STOP LOCAL STREAM
+ * =========================================================
  */
 export const stopLocalStream =
-  (localStream) => {
-
-    if (!localStream) {
+  (stream) => {
+    if (!stream) {
       return;
     }
 
-    localStream
+    stream
       .getTracks()
       .forEach((track) => {
-
         track.stop();
-
       });
-
   };
 
 
-/**
- * Close peer connection.
+/*
+ * =========================================================
+ * CLOSE PEER CONNECTION
+ * =========================================================
  */
 export const closePeerConnection =
   (peerConnection) => {
-
     if (!peerConnection) {
       return;
     }
 
     try {
-
-      peerConnection.ontrack = null;
-      peerConnection.onicecandidate = null;
+      peerConnection
+        .getSenders()
+        .forEach((sender) => {
+          try {
+            sender.track?.stop();
+          } catch (error) {
+            console.warn(
+              "Unable to stop sender track:",
+              error
+            );
+          }
+        });
 
       peerConnection.close();
-
     } catch (error) {
-
       console.error(
-        "Error closing peer connection:",
+        "ERROR CLOSING PEER CONNECTION:",
         error
       );
-
     }
-
   };

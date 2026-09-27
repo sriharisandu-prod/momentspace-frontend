@@ -6,9 +6,10 @@ let stompClient = null;
 const SOCKET_URL =
   `${process.env.REACT_APP_API_URL || "http://localhost:9090"}/ws`;
 
-
-/**
- * Connect the current user to the call WebSocket.
+/*
+ * =========================================================
+ * CONNECT CALL SOCKET
+ * =========================================================
  */
 export const connectCallSocket = (
   userId,
@@ -16,33 +17,74 @@ export const connectCallSocket = (
   onConnected,
   onError
 ) => {
+  const normalizedUserId = Number(userId);
 
-  if (!userId) {
+  if (!normalizedUserId) {
     console.error(
-      "Cannot connect call socket: user ID is missing."
+      "Cannot connect call socket. Invalid user ID:",
+      userId
     );
 
     return null;
   }
 
+  /*
+   * Already connected
+   */
   if (stompClient?.connected) {
     console.log(
-      "Call WebSocket is already connected."
+      "CALL SOCKET ALREADY CONNECTED"
     );
+
+    if (onConnected) {
+      onConnected();
+    }
 
     return stompClient;
   }
 
+  /*
+   * Existing client is trying to reconnect.
+   */
+  if (stompClient && !stompClient.connected) {
+    try {
+      stompClient.deactivate();
+    } catch (error) {
+      console.error(
+        "Failed to deactivate previous call socket:",
+        error
+      );
+    }
+
+    stompClient = null;
+  }
+
   console.log(
-    "Connecting call WebSocket:",
+    "================================="
+  );
+
+  console.log(
+    "CONNECTING CALL WEBSOCKET"
+  );
+
+  console.log(
+    "URL:",
     SOCKET_URL
   );
 
-  stompClient = new Client({
+  console.log(
+    "USER ID:",
+    normalizedUserId
+  );
 
+  console.log(
+    "================================="
+  );
+
+  stompClient = new Client({
     webSocketFactory: () => {
       console.log(
-        "Creating SockJS connection:",
+        "CREATING CALL SOCKJS CONNECTION:",
         SOCKET_URL
       );
 
@@ -52,50 +94,70 @@ export const connectCallSocket = (
     reconnectDelay: 5000,
 
     debug: (message) => {
-      console.log("[STOMP]", message);
+      console.log(
+        "[CALL STOMP]",
+        message
+      );
     },
 
     onConnect: () => {
+      console.log(
+        "================================="
+      );
 
       console.log(
         "CALL WEBSOCKET CONNECTED"
       );
 
-      const destination =
-        `/queue/calls/${userId}`;
+      console.log(
+        "CURRENT USER ID:",
+        normalizedUserId
+      );
 
       console.log(
-        "Subscribing to:",
+        "================================="
+      );
+
+      const destination =
+        `/queue/calls/${normalizedUserId}`;
+
+      console.log(
+        "SUBSCRIBING TO:",
         destination
       );
 
       stompClient.subscribe(
         destination,
         (message) => {
-
           try {
-
             const signal =
               JSON.parse(message.body);
 
             console.log(
-              "CALL SIGNAL RECEIVED:",
+              "================================="
+            );
+
+            console.log(
+              "CALL SIGNAL RECEIVED"
+            );
+
+            console.log(
               signal
+            );
+
+            console.log(
+              "================================="
             );
 
             if (onCallReceived) {
               onCallReceived(signal);
             }
-
           } catch (error) {
-
             console.error(
-              "Failed to parse call signal:",
+              "FAILED TO PARSE CALL SIGNAL:",
               error
             );
-
           }
-
         }
       );
 
@@ -105,14 +167,13 @@ export const connectCallSocket = (
     },
 
     onStompError: (frame) => {
-
       console.error(
-        "STOMP ERROR:",
+        "CALL STOMP ERROR:",
         frame.headers?.message
       );
 
       console.error(
-        "STOMP ERROR BODY:",
+        "CALL STOMP ERROR BODY:",
         frame.body
       );
 
@@ -122,9 +183,8 @@ export const connectCallSocket = (
     },
 
     onWebSocketError: (error) => {
-
       console.error(
-        "WEBSOCKET ERROR:",
+        "CALL WEBSOCKET ERROR:",
         error
       );
 
@@ -134,13 +194,10 @@ export const connectCallSocket = (
     },
 
     onWebSocketClose: () => {
-
       console.warn(
         "CALL WEBSOCKET CLOSED"
       );
-
     },
-
   });
 
   stompClient.activate();
@@ -149,76 +206,104 @@ export const connectCallSocket = (
 };
 
 
-/**
- * Send a call signal to the backend.
+/*
+ * =========================================================
+ * SEND CALL SIGNAL
+ * =========================================================
  */
 export const sendCallSignal = (
   signal
 ) => {
-
   if (!stompClient?.connected) {
-
     console.error(
-      "Cannot send call signal: WebSocket is not connected."
+      "Cannot send call signal. WebSocket not connected."
     );
 
     return false;
   }
 
+  const normalizedSignal = {
+    ...signal,
+
+    callerId:
+      signal.callerId !== null &&
+      signal.callerId !== undefined
+        ? Number(signal.callerId)
+        : null,
+
+    receiverId:
+      signal.receiverId !== null &&
+      signal.receiverId !== undefined
+        ? Number(signal.receiverId)
+        : null,
+
+    callId:
+      signal.callId !== null &&
+      signal.callId !== undefined
+        ? Number(signal.callId)
+        : null,
+  };
+
   console.log(
-    "CALL SIGNAL SENT:",
-    signal
+    "================================="
+  );
+
+  console.log(
+    "CALL SIGNAL SENT"
+  );
+
+  console.log(
+    normalizedSignal
+  );
+
+  console.log(
+    "================================="
   );
 
   stompClient.publish({
+    destination: "/app/call",
 
-    destination:
-      "/app/call",
-
-    body:
-      JSON.stringify(signal),
-
+    body: JSON.stringify(
+      normalizedSignal
+    ),
   });
 
   return true;
 };
 
 
-/**
- * Disconnect the WebSocket.
+/*
+ * =========================================================
+ * DISCONNECT
+ * =========================================================
  */
 export const disconnectCallSocket =
   async () => {
-
     if (!stompClient) {
       return;
     }
 
     try {
-
       await stompClient.deactivate();
-
     } catch (error) {
-
       console.error(
-        "Error disconnecting call socket:",
+        "ERROR DISCONNECTING CALL SOCKET:",
         error
       );
-
     }
 
     stompClient = null;
   };
 
 
-/**
- * Check whether the socket is currently connected.
+/*
+ * =========================================================
+ * CHECK CONNECTION
+ * =========================================================
  */
 export const isCallSocketConnected =
   () => {
-
     return Boolean(
       stompClient?.connected
     );
-
   };

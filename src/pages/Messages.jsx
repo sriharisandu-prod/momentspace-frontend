@@ -5,11 +5,13 @@ import React, {
   useState,
 } from "react";
 
-import { useAuth } from "../contexts/AuthContext";
+import {
+  useAuth,
+} from "../contexts/AuthContext";
 
-import useCall from "../hooks/useCall";
-
-import CallPanel from "../components/CallPanel";
+import {
+  useCall,
+} from "../contexts/CallContext";
 
 import {
   FiSearch,
@@ -37,96 +39,108 @@ import {
 import "./Messages.css";
 
 
-const getUnreadStorageKey = (userId) => {
-  return `memorieshub_unread_messages_${userId}`;
-};
+const getUnreadStorageKey =
+  (userId) => {
+    return `memorieshub_unread_messages_${userId}`;
+  };
 
 
-const getLastMessageStorageKey = (userId) => {
-  return `memorieshub_last_messages_${userId}`;
-};
+const getLastMessageStorageKey =
+  (userId) => {
+    return `memorieshub_last_messages_${userId}`;
+  };
 
 
 const Messages = () => {
-
-  const { user } = useAuth();
-
-
-  /*
-   * =========================
-   * CALL SYSTEM
-   * =========================
-   */
-
   const {
-  isConnected: callSocketConnected,
-
-  incomingCall,
-
-  activeCall,
-
-  callConnected,
-
-  isMuted,
-
-  startCall,
-
-  acceptCall,
-
-  rejectCall,
-
-  endCall,
-
-  toggleMute,
-
-  localVideoRef,
-
-  remoteVideoRef,
-
-  remoteAudioRef,
-} = useCall(user?.id);
+    user,
+  } = useAuth();
 
 
   /*
-   * =========================
+   * =========================================================
+   * CALL SYSTEM
+   * =========================================================
+   *
+   * IMPORTANT:
+   *
+   * We only use values that actually exist
+   * in CallContext.
+   */
+  const {
+    callSocketConnected,
+    callStatus,
+    callConnected,
+    incomingCall,
+    call,
+    startCall,
+  } = useCall();
+
+
+  /*
+   * =========================================================
    * MESSAGE STATE
-   * =========================
+   * =========================================================
    */
 
-  const [users, setUsers] =
-    useState([]);
-
-  const [selectedUser, setSelectedUser] =
-    useState(null);
-
-  const [messages, setMessages] =
-    useState([]);
-
-  const [messageText, setMessageText] =
-    useState("");
-
-  const [searchText, setSearchText] =
-    useState("");
-
-  const [loadingUsers, setLoadingUsers] =
-    useState(true);
-
-  const [loadingMessages, setLoadingMessages] =
-    useState(false);
+  const [
+    users,
+    setUsers,
+  ] = useState([]);
 
 
-  const [unreadUsers, setUnreadUsers] =
-    useState({});
+  const [
+    selectedUser,
+    setSelectedUser,
+  ] = useState(null);
 
 
-  const [lastMessages, setLastMessages] =
-    useState({});
+  const [
+    messages,
+    setMessages,
+  ] = useState([]);
+
+
+  const [
+    messageText,
+    setMessageText,
+  ] = useState("");
+
+
+  const [
+    searchText,
+    setSearchText,
+  ] = useState("");
+
+
+  const [
+    loadingUsers,
+    setLoadingUsers,
+  ] = useState(true);
+
+
+  const [
+    loadingMessages,
+    setLoadingMessages,
+  ] = useState(false);
+
+
+  const [
+    unreadUsers,
+    setUnreadUsers,
+  ] = useState({});
+
+
+  const [
+    lastMessages,
+    setLastMessages,
+  ] = useState({});
 
 
   /*
-   * =========================
+   * =========================================================
    * REFS
-   * =========================
+   * =========================================================
    */
 
   const selectedUserRef =
@@ -140,54 +154,60 @@ const Messages = () => {
 
 
   /*
-   * Keep selected user ref updated.
+   * =========================================================
+   * SELECTED USER REF
+   * =========================================================
    */
 
   useEffect(() => {
-
     selectedUserRef.current =
       selectedUser;
-
-  }, [selectedUser]);
+  }, [
+    selectedUser,
+  ]);
 
 
   /*
-   * Keep users ref updated.
+   * =========================================================
+   * USERS REF
+   * =========================================================
    */
 
   useEffect(() => {
-
     usersRef.current =
       users;
-
-  }, [users]);
+  }, [
+    users,
+  ]);
 
 
   /*
-   * =========================
+   * =========================================================
    * RESTORE MESSAGE STATE
-   * =========================
+   * =========================================================
    */
 
   useEffect(() => {
-
     if (!user?.id) {
       return;
     }
 
-    try {
 
+    try {
       const storedUnread =
         localStorage.getItem(
-          getUnreadStorageKey(user.id)
+          getUnreadStorageKey(
+            user.id
+          )
         );
+
 
       if (storedUnread) {
-
         setUnreadUsers(
-          JSON.parse(storedUnread)
+          JSON.parse(
+            storedUnread
+          )
         );
-
       }
 
 
@@ -198,91 +218,94 @@ const Messages = () => {
           )
         );
 
-      if (storedLastMessages) {
 
+      if (storedLastMessages) {
         setLastMessages(
           JSON.parse(
             storedLastMessages
           )
         );
-
       }
-
     } catch (error) {
-
       console.error(
-        "Failed to restore message state:",
+        "FAILED TO RESTORE MESSAGE STATE:",
         error
       );
-
     }
-
-  }, [user?.id]);
+  }, [
+    user?.id,
+  ]);
 
 
   /*
-   * =========================
+   * =========================================================
    * LOAD USERS
-   * =========================
+   * =========================================================
    */
 
   useEffect(() => {
+    const loadUsers =
+      async () => {
+        if (!user?.id) {
+          return;
+        }
 
-    const loadUsers = async () => {
 
-      if (!user?.id) {
-        return;
-      }
+        try {
+          setLoadingUsers(
+            true
+          );
 
-      try {
 
-        setLoadingUsers(true);
+          const data =
+            await getAllUsers();
 
-        const data =
-          await getAllUsers();
 
-        const otherUsers =
-          Array.isArray(data)
-            ? data.filter(
-                (item) =>
-                  Number(item.id) !==
-                  Number(user.id)
-              )
-            : [];
+          const otherUsers =
+            Array.isArray(data)
+              ? data.filter(
+                  (item) =>
+                    Number(
+                      item.id
+                    ) !==
+                    Number(
+                      user.id
+                    )
+                )
+              : [];
 
-        setUsers(
-          otherUsers
-        );
 
-      } catch (error) {
+          setUsers(
+            otherUsers
+          );
+        } catch (error) {
+          console.error(
+            "FAILED TO LOAD USERS:",
+            error
+          );
 
-        console.error(
-          "Failed to load users:",
-          error
-        );
+          setUsers([]);
+        } finally {
+          setLoadingUsers(
+            false
+          );
+        }
+      };
 
-        setUsers([]);
-
-      } finally {
-
-        setLoadingUsers(false);
-
-      }
-    };
 
     loadUsers();
-
-  }, [user?.id]);
+  }, [
+    user?.id,
+  ]);
 
 
   /*
-   * =========================
+   * =========================================================
    * GLOBAL MESSAGE SOCKET
-   * =========================
+   * =========================================================
    */
 
   useEffect(() => {
-
     if (
       !user?.id ||
       !user?.email
@@ -290,15 +313,15 @@ const Messages = () => {
       return;
     }
 
+
     console.log(
-      "Starting global message listener:",
+      "STARTING GLOBAL MESSAGE LISTENER:",
       user.email
     );
 
 
     connectMessageSocket(
       (newMessage) => {
-
         console.log(
           "GLOBAL MESSAGE RECEIVED:",
           newMessage
@@ -308,7 +331,6 @@ const Messages = () => {
         /*
          * Ignore own message.
          */
-
         if (
           newMessage.senderEmail ===
           user.email
@@ -318,10 +340,9 @@ const Messages = () => {
 
 
         /*
-         * Only messages addressed
-         * to current user.
+         * Ignore messages not meant
+         * for current user.
          */
-
         if (
           newMessage.receiverEmail !==
           user.email
@@ -333,6 +354,7 @@ const Messages = () => {
         const currentSelectedUser =
           selectedUserRef.current;
 
+
         const currentUsers =
           usersRef.current;
 
@@ -340,7 +362,6 @@ const Messages = () => {
         /*
          * Find sender.
          */
-
         const sender =
           currentUsers.find(
             (item) =>
@@ -350,30 +371,35 @@ const Messages = () => {
 
 
         /*
-         * Current open conversation.
+         * Current conversation open.
          */
-
         if (
           currentSelectedUser &&
           currentSelectedUser.email ===
             newMessage.senderEmail
         ) {
-
           setMessages(
             (previousMessages) => {
-
               const alreadyExists =
                 previousMessages.some(
                   (item) =>
                     item.id &&
                     newMessage.id &&
-                    Number(item.id) ===
-                      Number(newMessage.id)
+                    Number(
+                      item.id
+                    ) ===
+                      Number(
+                        newMessage.id
+                      )
                 );
 
-              if (alreadyExists) {
+
+              if (
+                alreadyExists
+              ) {
                 return previousMessages;
               }
+
 
               return [
                 ...previousMessages,
@@ -384,28 +410,31 @@ const Messages = () => {
 
 
           if (sender?.id) {
-
             setLastMessages(
               (previous) => {
-
                 const next = {
                   ...previous,
+
                   [sender.id]:
                     newMessage.content,
                 };
+
 
                 localStorage.setItem(
                   getLastMessageStorageKey(
                     user.id
                   ),
-                  JSON.stringify(next)
+                  JSON.stringify(
+                    next
+                  )
                 );
+
 
                 return next;
               }
             );
-
           }
+
 
           return;
         }
@@ -414,23 +443,26 @@ const Messages = () => {
         /*
          * Message from another conversation.
          */
-
         if (sender?.id) {
-
           setUnreadUsers(
             (previous) => {
-
               const next = {
                 ...previous,
-                [sender.id]: true,
+
+                [sender.id]:
+                  true,
               };
+
 
               localStorage.setItem(
                 getUnreadStorageKey(
                   user.id
                 ),
-                JSON.stringify(next)
+                JSON.stringify(
+                  next
+                )
               );
+
 
               return next;
             }
@@ -439,36 +471,35 @@ const Messages = () => {
 
           setLastMessages(
             (previous) => {
-
               const next = {
                 ...previous,
+
                 [sender.id]:
                   newMessage.content,
               };
+
 
               localStorage.setItem(
                 getLastMessageStorageKey(
                   user.id
                 ),
-                JSON.stringify(next)
+                JSON.stringify(
+                  next
+                )
               );
+
 
               return next;
             }
           );
-
         }
-
       }
     );
 
 
     return () => {
-
       disconnectMessageSocket();
-
     };
-
   }, [
     user?.id,
     user?.email,
@@ -476,234 +507,278 @@ const Messages = () => {
 
 
   /*
-   * =========================
+   * =========================================================
    * SCROLL TO BOTTOM
-   * =========================
+   * =========================================================
    */
 
   useEffect(() => {
-
-    messagesEndRef.current?.scrollIntoView({
-      behavior: "smooth",
-    });
-
-  }, [messages]);
+    messagesEndRef.current?.scrollIntoView(
+      {
+        behavior:
+          "smooth",
+      }
+    );
+  }, [
+    messages,
+  ]);
 
 
   /*
-   * =========================
+   * =========================================================
    * OPEN CHAT
-   * =========================
+   * =========================================================
    */
 
-  const openChat = async (
-    chatUser
-  ) => {
-
-    if (!chatUser) {
-      return;
-    }
-
-
-    setSelectedUser(
-      chatUser
-    );
-
-
-    /*
-     * Clear unread.
-     */
-
-    setUnreadUsers(
-      (previous) => {
-
-        const next = {
-          ...previous,
-        };
-
-        delete next[
-          chatUser.id
-        ];
-
-
-        if (user?.id) {
-
-          localStorage.setItem(
-            getUnreadStorageKey(
-              user.id
-            ),
-            JSON.stringify(next)
-          );
-
-        }
-
-        return next;
+  const openChat =
+    async (chatUser) => {
+      if (!chatUser) {
+        return;
       }
-    );
 
 
-    setMessages([]);
-
-    setLoadingMessages(true);
-
-
-    try {
-
-      const data =
-        await getConversation(
-          user.email,
-          chatUser.email
-        );
-
-
-      const loadedMessages =
-        Array.isArray(data)
-          ? data
-          : [];
-
-
-      setMessages(
-        loadedMessages
+      setSelectedUser(
+        chatUser
       );
 
 
-      if (
-        loadedMessages.length > 0
-      ) {
+      /*
+       * Clear unread.
+       */
+      setUnreadUsers(
+        (previous) => {
+          const next = {
+            ...previous,
+          };
 
-        const lastMessage =
-          loadedMessages[
-            loadedMessages.length - 1
+
+          delete next[
+            chatUser.id
           ];
 
 
-        setLastMessages(
-          (previous) => {
-
-            const next = {
-              ...previous,
-              [chatUser.id]:
-                lastMessage.content,
-            };
-
-
+          if (user?.id) {
             localStorage.setItem(
-              getLastMessageStorageKey(
+              getUnreadStorageKey(
                 user.id
               ),
-              JSON.stringify(next)
+              JSON.stringify(
+                next
+              )
             );
-
-
-            return next;
           }
-        );
 
-      }
 
-    } catch (error) {
-
-      console.error(
-        "Failed to load conversation:",
-        error
+          return next;
+        }
       );
 
-      setMessages([]);
 
-    } finally {
-
-      setLoadingMessages(false);
-
-    }
-
-  };
+      setMessages(
+        []
+      );
 
 
-  /*
-   * =========================
-   * SEND MESSAGE
-   * =========================
-   */
-
-  const handleSendMessage = () => {
-
-    const content =
-      messageText.trim();
+      setLoadingMessages(
+        true
+      );
 
 
-    if (
-      !content ||
-      !selectedUser ||
-      !user
-    ) {
-      return;
-    }
+      try {
+        const data =
+          await getConversation(
+            user.email,
+            chatUser.email
+          );
 
 
-    const localMessage = {
+        const loadedMessages =
+          Array.isArray(data)
+            ? data
+            : [];
 
-      id:
-        `local-${Date.now()}`,
 
-      content,
+        setMessages(
+          loadedMessages
+        );
 
-      senderEmail:
-        user.email,
 
-      receiverEmail:
-        selectedUser.email,
+        if (
+          loadedMessages.length >
+          0
+        ) {
+          const lastMessage =
+            loadedMessages[
+              loadedMessages.length -
+                1
+            ];
 
-      sentAt:
-        new Date().toISOString(),
 
+          setLastMessages(
+            (previous) => {
+              const next = {
+                ...previous,
+
+                [chatUser.id]:
+                  lastMessage.content,
+              };
+
+
+              localStorage.setItem(
+                getLastMessageStorageKey(
+                  user.id
+                ),
+                JSON.stringify(
+                  next
+                )
+              );
+
+
+              return next;
+            }
+          );
+        }
+      } catch (error) {
+        console.error(
+          "FAILED TO LOAD CONVERSATION:",
+          error
+        );
+
+        setMessages([]);
+      } finally {
+        setLoadingMessages(
+          false
+        );
+      }
     };
 
 
-    /*
-     * Show immediately.
-     */
+  /*
+   * =========================================================
+   * START VOICE CALL
+   * =========================================================
+   */
 
-    setMessages(
-      (previousMessages) => [
-        ...previousMessages,
-        localMessage,
-      ]
-    );
-
-
-    /*
-     * Update preview.
-     */
-
-    setLastMessages(
-      (previous) => {
-
-        const next = {
-          ...previous,
-          [selectedUser.id]:
-            content,
-        };
+  const handleVoiceCall =
+    () => {
+      if (!selectedUser?.id) {
+        return;
+      }
 
 
-        localStorage.setItem(
-          getLastMessageStorageKey(
-            user.id
-          ),
-          JSON.stringify(next)
+      if (
+        !callSocketConnected
+      ) {
+        alert(
+          "Call connection is not ready yet. Please wait a moment and try again."
         );
 
-
-        return next;
+        return;
       }
-    );
 
 
-    /*
-     * Send backend message.
-     */
+      if (call) {
+        alert(
+          "You already have an active call."
+        );
 
-    const sent =
-      sendMessage({
+        return;
+      }
+
+
+      console.log(
+        "START VOICE CALL TO:",
+        selectedUser.id
+      );
+
+
+      startCall({
+        receiverId:
+          Number(
+            selectedUser.id
+          ),
+
+        callType:
+          "VOICE",
+      });
+    };
+
+
+  /*
+   * =========================================================
+   * START VIDEO CALL
+   * =========================================================
+   */
+
+  const handleVideoCall =
+    () => {
+      if (!selectedUser?.id) {
+        return;
+      }
+
+
+      if (
+        !callSocketConnected
+      ) {
+        alert(
+          "Call connection is not ready yet. Please wait a moment and try again."
+        );
+
+        return;
+      }
+
+
+      if (call) {
+        alert(
+          "You already have an active call."
+        );
+
+        return;
+      }
+
+
+      console.log(
+        "START VIDEO CALL TO:",
+        selectedUser.id
+      );
+
+
+      startCall({
+        receiverId:
+          Number(
+            selectedUser.id
+          ),
+
+        callType:
+          "VIDEO",
+      });
+    };
+
+
+  /*
+   * =========================================================
+   * SEND MESSAGE
+   * =========================================================
+   */
+
+  const handleSendMessage =
+    () => {
+      const content =
+        messageText.trim();
+
+
+      if (
+        !content ||
+        !selectedUser ||
+        !user
+      ) {
+        return;
+      }
+
+
+      const localMessage = {
+        id:
+          `local-${Date.now()}`,
 
         content,
 
@@ -713,67 +788,117 @@ const Messages = () => {
         receiverEmail:
           selectedUser.email,
 
-      });
+        sentAt:
+          new Date().toISOString(),
+      };
 
 
-    /*
-     * If socket isn't connected,
-     * remove temporary message.
-     */
-
-    if (!sent) {
-
+      /*
+       * Show immediately.
+       */
       setMessages(
-        (previousMessages) =>
-          previousMessages.filter(
-            (message) =>
-              message.id !==
-              localMessage.id
-          )
+        (previousMessages) => [
+          ...previousMessages,
+          localMessage,
+        ]
       );
 
-      return;
-    }
+
+      /*
+       * Update preview.
+       */
+      setLastMessages(
+        (previous) => {
+          const next = {
+            ...previous,
+
+            [selectedUser.id]:
+              content,
+          };
 
 
-    setMessageText("");
+          localStorage.setItem(
+            getLastMessageStorageKey(
+              user.id
+            ),
+            JSON.stringify(
+              next
+            )
+          );
 
-  };
+
+          return next;
+        }
+      );
+
+
+      /*
+       * Send backend message.
+       */
+      const sent =
+        sendMessage({
+          content,
+
+          senderEmail:
+            user.email,
+
+          receiverEmail:
+            selectedUser.email,
+        });
+
+
+      /*
+       * Remove temporary message
+       * if socket failed.
+       */
+      if (!sent) {
+        setMessages(
+          (previousMessages) =>
+            previousMessages.filter(
+              (message) =>
+                message.id !==
+                localMessage.id
+            )
+        );
+
+        return;
+      }
+
+
+      setMessageText(
+        ""
+      );
+    };
 
 
   /*
-   * =========================
+   * =========================================================
    * ENTER KEY
-   * =========================
+   * =========================================================
    */
 
-  const handleKeyDown = (
-    event
-  ) => {
+  const handleKeyDown =
+    (event) => {
+      if (
+        event.key ===
+          "Enter" &&
+        !event.shiftKey
+      ) {
+        event.preventDefault();
 
-    if (
-      event.key === "Enter" &&
-      !event.shiftKey
-    ) {
-
-      event.preventDefault();
-
-      handleSendMessage();
-
-    }
-
-  };
+        handleSendMessage();
+      }
+    };
 
 
   /*
-   * =========================
-   * SEARCH USERS
-   * =========================
+   * =========================================================
+   * SEARCH
+   * =========================================================
    */
 
   const filteredUsers =
     useMemo(() => {
-
       const query =
         searchText
           .trim()
@@ -794,7 +919,6 @@ const Messages = () => {
             ?.toLowerCase()
             .includes(query)
       );
-
     }, [
       users,
       searchText,
@@ -802,36 +926,32 @@ const Messages = () => {
 
 
   /*
-   * =========================
+   * =========================================================
    * PROFILE IMAGE
-   * =========================
+   * =========================================================
    */
 
-  const getProfileImage = (
-    chatUser
-  ) => {
-
-    return (
-      chatUser?.profilePhotoUrl ||
-      "/default-avatar.png"
-    );
-
-  };
+  const getProfileImage =
+    (chatUser) => {
+      return (
+        chatUser?.profilePhotoUrl ||
+        "/default-avatar.png"
+      );
+    };
 
 
   /*
-   * =========================
+   * =========================================================
    * RENDER
-   * =========================
+   * =========================================================
    */
 
   return (
-
     <div className="messages-page">
 
-      {/* =========================
+      {/* ===================================================
           LEFT USERS PANEL
-      ========================== */}
+      ==================================================== */}
 
       <div className="messages-users-panel">
 
@@ -881,8 +1001,12 @@ const Messages = () => {
               (chatUser) => {
 
                 const isSelected =
-                  selectedUser?.id ===
-                  chatUser.id;
+                  Number(
+                    selectedUser?.id
+                  ) ===
+                  Number(
+                    chatUser.id
+                  );
 
 
                 const isUnread =
@@ -901,9 +1025,11 @@ const Messages = () => {
 
 
                 return (
-
                   <button
-                    key={chatUser.id}
+                    key={
+                      chatUser.id
+                    }
+                    type="button"
                     className={`messages-user ${
                       isSelected
                         ? "messages-user-selected"
@@ -969,7 +1095,9 @@ const Messages = () => {
                             : ""
                         }`}
                       >
-                        {preview}
+                        {
+                          preview
+                        }
                       </div>
 
                     </div>
@@ -980,9 +1108,7 @@ const Messages = () => {
                     />
 
                   </button>
-
                 );
-
               }
             )
 
@@ -993,9 +1119,9 @@ const Messages = () => {
       </div>
 
 
-      {/* =========================
+      {/* ===================================================
           CHAT PANEL
-      ========================== */}
+      ==================================================== */}
 
       <div className="messages-chat-panel">
 
@@ -1017,9 +1143,9 @@ const Messages = () => {
 
           <>
 
-            {/* =========================
+            {/* =============================================
                 CHAT HEADER
-            ========================== */}
+            ============================================== */}
 
             <div className="messages-chat-header">
 
@@ -1052,9 +1178,9 @@ const Messages = () => {
               </div>
 
 
-              {/* =========================
+              {/* ===========================================
                   CALL BUTTONS
-              ========================== */}
+              ============================================ */}
 
               <div className="messages-call-actions">
 
@@ -1062,14 +1188,13 @@ const Messages = () => {
                   type="button"
                   title="Voice call"
                   aria-label="Voice call"
-                  onClick={() =>
-                    startCall(
-                      selectedUser.id,
-                      "VOICE"
-                    )
+                  onClick={
+                    handleVoiceCall
                   }
                   disabled={
-                    !callSocketConnected
+                    !callSocketConnected ||
+                    Boolean(call) ||
+                    Boolean(incomingCall)
                   }
                 >
                   <FiPhone
@@ -1082,14 +1207,13 @@ const Messages = () => {
                   type="button"
                   title="Video call"
                   aria-label="Video call"
-                  onClick={() =>
-                    startCall(
-                      selectedUser.id,
-                      "VIDEO"
-                    )
+                  onClick={
+                    handleVideoCall
                   }
                   disabled={
-                    !callSocketConnected
+                    !callSocketConnected ||
+                    Boolean(call) ||
+                    Boolean(incomingCall)
                   }
                 >
                   <FiVideo
@@ -1102,9 +1226,33 @@ const Messages = () => {
             </div>
 
 
-            {/* =========================
+            {/* =============================================
+                CALL SOCKET STATUS
+            ============================================== */}
+
+            {!callSocketConnected && (
+              <div
+                style={{
+                  padding:
+                    "6px 12px",
+                  fontSize:
+                    "12px",
+                  color:
+                    "#b45309",
+                  background:
+                    "#fffbeb",
+                  textAlign:
+                    "center",
+                }}
+              >
+                Connecting to call service...
+              </div>
+            )}
+
+
+            {/* =============================================
                 CHAT BODY
-            ========================== */}
+            ============================================== */}
 
             <div className="messages-chat-body">
 
@@ -1145,7 +1293,6 @@ const Messages = () => {
 
 
                     return (
-
                       <div
                         key={
                           message.id ||
@@ -1171,9 +1318,7 @@ const Messages = () => {
                         </div>
 
                       </div>
-
                     );
-
                   }
                 )
 
@@ -1181,23 +1326,29 @@ const Messages = () => {
 
 
               <div
-                ref={messagesEndRef}
+                ref={
+                  messagesEndRef
+                }
               />
 
             </div>
 
 
-            {/* =========================
+            {/* =============================================
                 MESSAGE INPUT
-            ========================== */}
+            ============================================== */}
 
             <div className="messages-input-area">
 
               <input
                 type="text"
                 placeholder={`Message ${selectedUser.username}...`}
-                value={messageText}
-                onChange={(event) =>
+                value={
+                  messageText
+                }
+                onChange={(
+                  event
+                ) =>
                   setMessageText(
                     event.target.value
                   )
@@ -1209,6 +1360,7 @@ const Messages = () => {
 
 
               <button
+                type="button"
                 onClick={
                   handleSendMessage
                 }
@@ -1232,29 +1384,6 @@ const Messages = () => {
         )}
 
       </div>
-
-
-      {/* =========================
-          CALL OVERLAY
-      ========================== */}
-
-      <CallPanel
-  call={activeCall}
-  incomingCall={incomingCall}
-
-  onAccept={acceptCall}
-  onReject={rejectCall}
-  onEnd={endCall}
-
-  callConnected={callConnected}
-
-  isMuted={isMuted}
-  onToggleMute={toggleMute}
-
-  localVideoRef={localVideoRef}
-  remoteVideoRef={remoteVideoRef}
-  remoteAudioRef={remoteAudioRef}
-/>
 
     </div>
   );

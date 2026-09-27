@@ -37,34 +37,55 @@ import Settings from "./pages/Settings";
 import Notifications from "./pages/Notifications";
 
 
-/* =========================================================
-   PROTECTED ROUTE
-========================================================= */
+/*
+ * =========================================================
+ * PROTECTED ROUTE
+ * =========================================================
+ */
 
-const ProtectedRoute = ({ children }) => {
+const ProtectedRoute = ({
+  children,
+}) => {
   const {
     isAuthenticated,
     loading,
   } = useAuth();
 
+
   if (loading) {
     return (
       <div
         style={{
-          minHeight: "100vh",
-          display: "flex",
-          alignItems: "center",
-          justifyContent: "center",
-          background: "#f8fafc",
-          color: "#64748b",
-          fontSize: "15px",
-          fontWeight: 600,
+          minHeight:
+            "100vh",
+
+          display:
+            "flex",
+
+          alignItems:
+            "center",
+
+          justifyContent:
+            "center",
+
+          background:
+            "#f8fafc",
+
+          color:
+            "#64748b",
+
+          fontSize:
+            "15px",
+
+          fontWeight:
+            600,
         }}
       >
         Loading MemoriesHub...
       </div>
     );
   }
+
 
   if (!isAuthenticated) {
     return (
@@ -75,162 +96,197 @@ const ProtectedRoute = ({ children }) => {
     );
   }
 
+
   return children;
 };
 
 
-/* =========================================================
-   GLOBAL CALL UI
-========================================================= */
+/*
+ * =========================================================
+ * GLOBAL CALL PANEL
+ * =========================================================
+ */
 
 const GlobalCallPanel = () => {
   const {
     call,
     incomingCall,
-    callConnected,
-    isMuted,
-    localVideoRef,
-    remoteVideoRef,
-    remoteAudioRef,
-
-    acceptCall,
-    rejectCall,
-    endCall,
-    toggleMute,
   } = useCall();
 
+
   /*
-   * Don't render anything when there is no active
-   * incoming/outgoing call.
+   * Don't render anything when
+   * there is no call.
    */
-  if (!call && !incomingCall) {
+  if (
+    !call &&
+    !incomingCall
+  ) {
     return null;
   }
 
+
+  /*
+   * CallPanel itself gets all
+   * call state from useCall().
+   */
   return (
-    <CallPanel
-      call={call}
-      incomingCall={incomingCall}
-
-      onAccept={acceptCall}
-      onReject={rejectCall}
-      onEnd={endCall}
-
-      callConnected={callConnected}
-
-      isMuted={isMuted}
-      onToggleMute={toggleMute}
-
-      localVideoRef={localVideoRef}
-      remoteVideoRef={remoteVideoRef}
-      remoteAudioRef={remoteAudioRef}
-    />
+    <CallPanel />
   );
 };
 
 
-/* =========================================================
-   APPLICATION ROUTES
-========================================================= */
+/*
+ * =========================================================
+ * PROTECTED APP LAYOUT
+ * =========================================================
+ *
+ * CallProvider wraps the entire logged-in
+ * application.
+ *
+ * Therefore:
+ *
+ * Messages
+ * Home
+ * Explore
+ * Profile
+ * etc.
+ *
+ * can all access useCall().
+ */
+
+const ProtectedApp =
+  () => {
+    return (
+      <CallProvider>
+
+        <MainLayout />
+
+        <GlobalCallPanel />
+
+      </CallProvider>
+    );
+  };
+
+
+/*
+ * =========================================================
+ * APP ROUTES
+ * =========================================================
+ */
 
 const AppRoutes = () => {
   return (
     <Routes>
 
-      {/* =================================================
+      {/* ===================================================
           PUBLIC ROUTES
-      ================================================= */}
+      ==================================================== */}
 
       <Route
         path="/login"
-        element={<Login />}
+        element={
+          <Login />
+        }
       />
 
       <Route
         path="/register"
-        element={<Register />}
+        element={
+          <Register />
+        }
       />
 
 
-      {/* =================================================
+      {/* ===================================================
           PROTECTED ROUTES
-      ================================================= */}
+      ==================================================== */}
 
       <Route
         element={
           <ProtectedRoute>
-            <MainLayout />
+            <ProtectedApp />
           </ProtectedRoute>
         }
       >
 
-        {/* Home */}
         <Route
           path="/home"
-          element={<Home />}
+          element={
+            <Home />
+          }
         />
 
-        {/* Explore */}
         <Route
           path="/explore"
-          element={<Explore />}
+          element={
+            <Explore />
+          }
         />
 
-        {/* Create Memory */}
         <Route
           path="/create"
-          element={<CreateMemory />}
+          element={
+            <CreateMemory />
+          }
         />
 
-        {/* Saved Memories */}
         <Route
           path="/saved"
-          element={<SavedMemories />}
+          element={
+            <SavedMemories />
+          }
         />
 
-        {/* Categories */}
         <Route
           path="/categories"
-          element={<Categories />}
+          element={
+            <Categories />
+          }
         />
 
-        {/* Locations */}
         <Route
           path="/locations"
-          element={<Locations />}
+          element={
+            <Locations />
+          }
         />
 
-        {/* Messages */}
         <Route
           path="/messages"
-          element={<Messages />}
+          element={
+            <Messages />
+          }
         />
 
-        {/* Notifications */}
         <Route
           path="/notifications"
-          element={<Notifications />}
+          element={
+            <Notifications />
+          }
         />
 
-        {/* Current User Profile */}
         <Route
           path="/profile"
-          element={<Profile />}
+          element={
+            <Profile />
+          }
         />
 
-        {/* Other User Profile */}
         <Route
           path="/profile/:userId"
-          element={<PublicProfile />}
+          element={
+            <PublicProfile />
+          }
         />
 
-        {/* Settings */}
         <Route
           path="/settings"
-          element={<Settings />}
+          element={
+            <Settings />
+          }
         />
 
-        {/* Root */}
         <Route
           path="/"
           element={
@@ -241,7 +297,6 @@ const AppRoutes = () => {
           }
         />
 
-        {/* Unknown protected route */}
         <Route
           path="*"
           element={
@@ -255,9 +310,9 @@ const AppRoutes = () => {
       </Route>
 
 
-      {/* =================================================
-          UNKNOWN PUBLIC ROUTE
-      ================================================= */}
+      {/* ===================================================
+          FALLBACK
+      ==================================================== */}
 
       <Route
         path="*"
@@ -274,30 +329,17 @@ const AppRoutes = () => {
 };
 
 
-/* =========================================================
-   APP
-========================================================= */
+/*
+ * =========================================================
+ * APP
+ * =========================================================
+ */
 
 const App = () => {
   return (
     <BrowserRouter>
 
-      {/* 
-        CallProvider must wrap the routes so Messages,
-        Home, Profile, etc. can access call state.
-      */}
-      <CallProvider>
-
-        <AppRoutes />
-
-        {/* 
-          This remains mounted globally.
-          Therefore an incoming call can appear even if
-          the user is currently on Home/Profile/Explore.
-        */}
-        <GlobalCallPanel />
-
-      </CallProvider>
+      <AppRoutes />
 
     </BrowserRouter>
   );
