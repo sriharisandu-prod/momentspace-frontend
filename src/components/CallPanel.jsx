@@ -13,7 +13,7 @@ import {
 
 import {
   useCall,
-} from "../context/CallContext";
+} from "../contexts/CallContext";
 
 import "./CallPanel.css";
 
